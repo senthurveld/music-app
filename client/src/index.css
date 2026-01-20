@@ -1,0 +1,53 @@
+
+
+@import "tailwindcss";
+
+:root {
+  /* Backgrounds */
+  --bg-main: #ffffff;
+  --bg-surface: #f8fafc;
+  --bg-elevated: #ffffff;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Brand */
+  --brand: #ef4444;
+  --brand-hover: #dc2626;
+
+  /* Border */
+  --border: #e2e8f0;
+
+  /* State */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Shadow */
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --bg-main: #0b0f19;
+  --bg-surface: #111827;
+  --bg-elevated: #0f172a;
+
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --brand: #f87171;
+  --brand-hover: #ef4444;
+
+  --border: #1f2937;
+
+  --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+
+html {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}

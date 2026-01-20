@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5"
+  },
+  "name": "music-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/server.js",
+  "devDependencies": {},
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon server/server.js",
+    "start": "NODE_ENV=production node server/server.js",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
