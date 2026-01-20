@@ -12,6 +12,8 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       from: sender,
       to: recipient,
       subject: "verify your email",
+      text: `Welcome to Musix!
+            Verify your email here: ${verificationToken}`,
       html: VERIFICATION_EMAIL_TEMPLATE.replace(
         "{verificationCode}",
         verificationToken,
@@ -52,6 +54,8 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
       from: sender,
       to: recipient,
       subject: "Reset your password",
+      text: `Reset your password
+            Reset your email here: ${resetURL}`,
       html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
       category: "password reset",
     });
@@ -69,11 +73,11 @@ export const sendResetSuccessEmail = async (email) => {
       from: sender,
       to: recipient,
       subject: "Password Reset Successfully",
+      text: `Password Reset Successfully`,
       html: PASSWORD_RESET_SUCCESS_TEMPLATE,
       category: "Password Reset",
     });
     console.log("email reset successfully", response);
-
   } catch (error) {
     throw new Error(`Error sending paasword reset success email: ${error}`);
   }
