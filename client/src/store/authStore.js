@@ -103,7 +103,8 @@ export const useAuthStore = create((set) => ({
       });
     } catch (error) {
       set({ error: null, isCheckingAuth: false, isAuthenticated: false });
-      throw error;
+      console.log("error : ", error.message);
+      
     }
   },
   forgotPassword: async (email) => {
