@@ -7,6 +7,8 @@ import path from "path";
 import { connectDB } from "./db/connectDB.js";
 
 import authRoutes from "./routes/auth.route.js";
+import searchRoutes from "./routes/search.routes.js";
+import soundcloudRoutes from "./routes/soundcloud.routes.js";
 
 dotenv.config();
 
@@ -20,6 +22,10 @@ app.use(express.json()); // allows us to parse incoming requests:req.body
 app.use(cookieParser()); // allows us to parse incoming cookies
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/soundcloud", soundcloudRoutes);
+app.use("/api/search", searchRoutes);
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/client/dist")));

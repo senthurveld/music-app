@@ -14,6 +14,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import SearchPage from "./pages/SearchPage";
 
 // Protected routes that requires auth
 const ProtectedRoute = ({ children }) => {
@@ -117,6 +118,16 @@ export const App = () => {
               <RedirectAuthenticatedUser>
                 <ResetPasswordPage />
               </RedirectAuthenticatedUser>
+            }
+          />
+
+          {/* musix pages  */}
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+              </ProtectedRoute>
             }
           />
           {/* catch all routes */}
