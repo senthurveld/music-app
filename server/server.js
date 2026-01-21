@@ -16,7 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://musix-app.up.railway.app"],
+    credentials: true,
+  }),
+);
 
 app.use(express.json()); // allows us to parse incoming requests:req.body
 app.use(cookieParser()); // allows us to parse incoming cookies
@@ -25,7 +30,6 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/soundcloud", soundcloudRoutes);
 app.use("/api/search", searchRoutes);
-
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/client/dist")));

@@ -1,10 +1,9 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { useNavigate, useState } from "react";
-
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
