@@ -10,26 +10,39 @@ router.get("/search", async (req, res) => {
     return res.status(400).json({ message: "Query required" });
 
   try {
-    // Internet Archive Advanced Search API
     const searchUrl = "https://archive.org/advancedsearch.php";
-    const params = {
-      q: `${q} AND mediatype:audio`, // search audio only
-      fl: "identifier,title,creator", // fields to fetch
-      rows: 20, // number of results
+    const searchParams = {
+      q: `${q} AND mediatype:audio`,
+      fl: "identifier,title,creator",
+      rows: 20,
       page: 1,
       output: "json",
     };
 
-    const response = await axios.get(searchUrl, { params });
-
+    const response = await axios.get(searchUrl, { params: searchParams });
     const docs = response.data.response.docs || [];
 
-    const tracks = docs.map((item) => ({
-      title: item.title,
-      artist: item.creator || "Unknown Artist",
-      url: `https://archive.org/download/${item.identifier}/${item.identifier}_64kb.mp3`, // example mp3 file
-      embedUrl: `https://archive.org/download/${item.identifier}/${item.identifier}_64kb.mp3`,
-    }));
+    const tracks = await Promise.all(
+      docs.map(async (item) => {
+        // Get the files for this item
+        const filesRes = await axios.get(
+          `https://archive.org/metadata/${item.identifier}`,
+        );
+        const files = filesRes.data.files || [];
+
+        // Try to find an mp3 file
+        const mp3File = files.find((f) => f.name.endsWith(".mp3"));
+        const mp3Url = mp3File
+          ? `https://archive.org/download/${item.identifier}/${mp3File.name}`
+          : null;
+
+        return {
+          title: item.title,
+          artist: item.creator || "Unknown Artist",
+          url: mp3Url, // direct playable mp3
+        };
+      }),
+    );
 
     res.json({ tracks });
   } catch (error) {
