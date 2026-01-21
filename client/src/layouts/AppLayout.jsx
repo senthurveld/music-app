@@ -3,8 +3,10 @@ import { ThemeToggle } from "../components/Themetoggle";
 
 const AppLayout = () => {
   return (
-    <div className="min-h-screen bg-background bg-zinc-900 text-gray-50 text-foreground relative transition-colors">
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Theme Toggle Button */}
       <ThemeToggle />
+      {/* Main content */}
       <Outlet />
     </div>
   );
