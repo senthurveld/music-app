@@ -29,8 +29,8 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Main */}
-      <main className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Main (grows to push footer down) */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* Left Content */}
           <div className="space-y-6">
@@ -58,7 +58,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Right Visual (Desktop Only) */}
+          {/* Right Visual */}
           <div className="hidden lg:block">
             <img
               src="/radio1.gif"
@@ -67,17 +67,19 @@ const HomePage = () => {
             />
           </div>
         </div>
-        <footer className="mt-auto text-sm text-center text-gray-400 py-4">
-          <hr className="w-11/12 mx-auto mb-3 border-gray-700" />
-          Made 🤍 with{" "}
-          <a
-            href="https://github.com/senthurveld"
-            className="hover:text-green-500"
-          >
-            Senthurvel
-          </a>
-        </footer>
       </main>
+
+      {/* Footer (always at bottom) */}
+      <footer className="text-sm text-center text-gray-400 py-4 border-t border-gray-700">
+        Made 🤍 with{" "}
+        <a
+          href="https://github.com/senthurveld"
+          className="hover:text-green-500"
+        >
+          Senthurvel
+        </a>
+      </footer>
+
       <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
