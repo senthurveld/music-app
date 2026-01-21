@@ -2,28 +2,32 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const ThemeToggle = () => {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "dark";
-  });
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("theme") || "dark",
+  );
+
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    const html = document.documentElement;
+
+    if (theme === "dark") {
+      html.classList.add("dark");
+    } else {
+      html.classList.remove("dark");
+    }
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full transition cursor-pointer absolute top-2 right-2"
+      onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+      className="p-2 rounded-full transition absolute top-2 right-2"
       aria-label="Toggle Theme"
     >
       {theme === "dark" ? (
-        <Moon className="stroke-blue-50" />
+        <Moon className="stroke-foreground" />
       ) : (
-        <Sun className="stroke-gray-700" />
+        <Sun className="stroke-foreground" />
       )}
     </button>
   );
