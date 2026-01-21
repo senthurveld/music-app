@@ -1,139 +1,262 @@
-// server/routes/search.js
+// server/routes/search.js - UPDATED WITH DEBUG LOGS
 import express from "express";
 import axios from "axios";
 
 const router = express.Router();
 
-// YouTube API Configuration
 const YOUTUBE_API_KEY =
   process.env.YOUTUBE_API_KEY || "AIzaSyBmaAJIeWtYUGZBnNIeoVRyLQ6xLh9t0ys";
-const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
-const YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos";
 
-// ========== YOUTUBE AUDIO SEARCH ==========
+// Debug function to log requests
+const logRequest = (url, params, response, error = null) => {
+  console.log("\n=== YOUTUBE API REQUEST ===");
+  console.log("URL:", url);
+  console.log("Params:", JSON.stringify(params, null, 2));
+  if (response) {
+    console.log("Status:", response.status);
+    console.log("Response keys:", Object.keys(response.data || {}));
+  }
+  if (error) {
+    console.log("Error:", error.message);
+    console.log("Error details:", error.response?.data || "No response data");
+  }
+  console.log("=== END REQUEST ===\n");
+};
+
+// Search YouTube with detailed logging
 async function searchYouTube(query) {
   try {
-    console.log(`Searching YouTube for: "${query}"`);
+    console.log(`\n🔍 Searching YouTube for: "${query}"`);
+
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "YOUR_YOUTUBE_API_KEY_HERE") {
+      console.error("❌ ERROR: YouTube API key not configured!");
+      console.log("Get API key from: https://console.cloud.google.com/");
+      console.log("Then set YOUTUBE_API_KEY in .env file or replace in code");
+      return [];
+    }
 
     // Step 1: Search for videos
-    const searchResponse = await axios.get(YOUTUBE_SEARCH_URL, {
-      params: {
-        part: "snippet",
-        q: `${query} song audio`,
-        type: "video",
-        videoCategoryId: "10", // Music category
-        maxResults: 15,
-        key: YOUTUBE_API_KEY,
-        videoDuration: "medium", // 4-20 minutes (typical for songs)
-        relevanceLanguage: "en",
-        safeSearch: "moderate",
-      },
-      timeout: 10000,
-    });
+    const searchParams = {
+      part: "snippet",
+      q: `${query} music song`,
+      type: "video",
+      maxResults: 10,
+      key: YOUTUBE_API_KEY,
+      videoCategoryId: "10", // Music category
+      safeSearch: "moderate",
+      order: "relevance",
+    };
 
-    const videoIds = searchResponse.data.items.map((item) => item.id.videoId);
+    console.log("📤 Sending search request...");
+    const searchResponse = await axios.get(
+      "https://www.googleapis.com/youtube/v3/search",
+      {
+        params: searchParams,
+        timeout: 15000,
+      },
+    );
+
+    logRequest(
+      "https://www.googleapis.com/youtube/v3/search",
+      searchParams,
+      searchResponse,
+    );
+
+    if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
+      console.log("📭 No videos found in search results");
+      return [];
+    }
+
+    const videoIds = searchResponse.data.items
+      .map((item) => item.id.videoId)
+      .filter((id) => id);
+    console.log(`📊 Found ${videoIds.length} video IDs:`, videoIds);
 
     if (videoIds.length === 0) {
       return [];
     }
 
-    // Step 2: Get video details (including duration)
-    const videoResponse = await axios.get(YOUTUBE_VIDEO_URL, {
-      params: {
-        part: "contentDetails,snippet",
-        id: videoIds.join(","),
-        key: YOUTUBE_API_KEY,
-      },
-      timeout: 10000,
-    });
+    // Step 2: Get video details
+    const videoParams = {
+      part: "contentDetails,snippet,statistics",
+      id: videoIds.join(","),
+      key: YOUTUBE_API_KEY,
+    };
 
-    // Step 3: Format tracks
+    console.log("📤 Sending video details request...");
+    const videoResponse = await axios.get(
+      "https://www.googleapis.com/youtube/v3/videos",
+      {
+        params: videoParams,
+        timeout: 15000,
+      },
+    );
+
+    logRequest(
+      "https://www.googleapis.com/youtube/v3/videos",
+      videoParams,
+      videoResponse,
+    );
+
+    // Step 3: Process results
     const tracks = videoResponse.data.items
       .map((item) => {
-        // Extract duration in seconds
-        const duration = parseYouTubeDuration(item.contentDetails.duration);
+        // Parse duration from ISO 8601 format (PT1H2M10S)
+        let duration = 0;
+        const durationStr = item.contentDetails?.duration || "";
 
-        // Skip if too short or too long (likely not a song)
+        if (durationStr) {
+          const match = durationStr.match(
+            /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/,
+          );
+          if (match) {
+            const hours = parseInt(match[1] || 0);
+            const minutes = parseInt(match[2] || 0);
+            const seconds = parseInt(match[3] || 0);
+            duration = hours * 3600 + minutes * 60 + seconds;
+          }
+        }
+
+        // Only include if it's likely a song (1-10 minutes)
         if (duration < 60 || duration > 600) {
-          // 1-10 minutes
+          console.log(
+            `⏱️ Skipping ${item.snippet.title} - Duration: ${duration}s (outside 1-10 minute range)`,
+          );
           return null;
         }
+
+        // Get best thumbnail
+        let thumbnail =
+          item.snippet.thumbnails?.maxres?.url ||
+          item.snippet.thumbnails?.high?.url ||
+          item.snippet.thumbnails?.medium?.url ||
+          item.snippet.thumbnails?.default?.url;
 
         return {
           title: item.snippet.title,
           artist: item.snippet.channelTitle,
           url: `https://www.youtube.com/watch?v=${item.id}`,
-          thumbnail:
-            item.snippet.thumbnails.medium?.url ||
-            item.snippet.thumbnails.default.url,
+          thumbnail: thumbnail,
           duration: duration,
           source: "YouTube",
           videoId: item.id,
+          viewCount: item.statistics?.viewCount || 0,
         };
       })
       .filter((track) => track !== null);
 
-    console.log(`Found ${tracks.length} YouTube tracks`);
+    console.log(`✅ Processed ${tracks.length} tracks`);
+    tracks.forEach((track, i) => {
+      console.log(
+        `${i + 1}. ${track.title} - ${track.artist} (${Math.floor(track.duration / 60)}:${track.duration % 60})`,
+      );
+    });
+
     return tracks;
   } catch (error) {
-    console.log(
-      "YouTube search error:",
-      error.response?.data?.error?.message || error.message,
-    );
+    console.error("❌ YouTube search failed!");
 
-    // If quota exceeded, return empty array
-    if (error.response?.data?.error?.code === 403) {
-      console.log("YouTube API quota exceeded");
-      return [];
+    if (error.response) {
+      // API error
+      console.log("Status:", error.response.status);
+      console.log("Status Text:", error.response.statusText);
+      console.log("Error Data:", JSON.stringify(error.response.data, null, 2));
+
+      if (error.response.status === 403) {
+        console.log("\n🔴 POSSIBLE ISSUES:");
+        console.log("1. YouTube Data API v3 not enabled");
+        console.log("2. API key invalid or expired");
+        console.log("3. Daily quota exceeded");
+        console.log("4. API key restrictions (IP, referrer, etc.)");
+        console.log("\n✅ SOLUTIONS:");
+        console.log("- Go to: https://console.cloud.google.com/");
+        console.log("- Enable 'YouTube Data API v3'");
+        console.log("- Check quota usage");
+        console.log("- Remove API key restrictions for testing");
+      }
+    } else if (error.request) {
+      // Network error
+      console.log("Network error - No response received");
+      console.log("Request:", error.request);
+    } else {
+      // Other error
+      console.log("Error:", error.message);
     }
 
     return [];
   }
 }
 
-// Helper: Parse YouTube duration (PT1H2M10S format)
-function parseYouTubeDuration(duration) {
-  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-  const hours = (match[1] || "").replace("H", "") || 0;
-  const minutes = (match[2] || "").replace("M", "") || 0;
-  const seconds = (match[3] || "").replace("S", "") || 0;
-  return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+// Test function to verify YouTube API
+async function testYouTubeAPI() {
+  console.log("\n🎵 TESTING YOUTUBE API CONNECTION 🎵");
+
+  try {
+    // Test with a simple search
+    const testParams = {
+      part: "snippet",
+      q: "test music",
+      type: "video",
+      maxResults: 1,
+      key: YOUTUBE_API_KEY,
+    };
+
+    console.log("Testing API key...");
+    const response = await axios.get(
+      "https://www.googleapis.com/youtube/v3/search",
+      {
+        params: testParams,
+        timeout: 10000,
+      },
+    );
+
+    if (response.data.items && response.data.items.length > 0) {
+      console.log("✅ YouTube API is working!");
+      console.log(`Found: ${response.data.items[0].snippet.title}`);
+      return true;
+    } else {
+      console.log("⚠️ API responded but no items found");
+      return false;
+    }
+  } catch (error) {
+    console.log("❌ API test failed!");
+    console.log(
+      "Error:",
+      error.response?.data?.error?.message || error.message,
+    );
+    return false;
+  }
 }
 
-// ========== INTERNET ARCHIVE SEARCH ==========
+// Search Internet Archive
 async function searchInternetArchive(query) {
   try {
     console.log(`Searching Internet Archive for: "${query}"`);
 
-    const searchUrl = "https://archive.org/advancedsearch.php";
-    const searchParams = {
-      q: `${query} AND mediatype:audio`,
-      fl: "identifier,title,creator,year",
-      rows: 10,
-      page: 1,
-      output: "json",
-      sort: "downloads desc",
-    };
-
-    const response = await axios.get(searchUrl, {
-      params: searchParams,
-      timeout: 10000,
+    const response = await axios.get("https://archive.org/advancedsearch.php", {
+      params: {
+        q: `${query} AND mediatype:audio`,
+        fl: "identifier,title,creator,year",
+        rows: 10,
+        output: "json",
+        sort: "downloads desc",
+      },
+      timeout: 15000,
     });
 
     const docs = response.data.response?.docs || [];
 
     const tracks = await Promise.all(
-      docs.slice(0, 8).map(async (item) => {
+      docs.slice(0, 5).map(async (item) => {
         try {
-          const metadataUrl = `https://archive.org/metadata/${item.identifier}`;
-          const metaResponse = await axios.get(metadataUrl, { timeout: 8000 });
-          const files = metaResponse.data.files || [];
+          const metaResponse = await axios.get(
+            `https://archive.org/metadata/${item.identifier}`,
+            { timeout: 10000 },
+          );
 
+          const files = metaResponse.data.files || [];
           const audioFile = files.find(
-            (f) =>
-              f.name?.endsWith(".mp3") ||
-              f.name?.endsWith(".ogg") ||
-              (f.format && f.format.includes("MP3")),
+            (f) => f.name?.endsWith(".mp3") || f.name?.endsWith(".ogg"),
           );
 
           if (!audioFile) return null;
@@ -141,7 +264,7 @@ async function searchInternetArchive(query) {
           return {
             title: item.title || "Unknown Track",
             artist: Array.isArray(item.creator)
-              ? item.creator.join(", ")
+              ? item.creator[0]
               : item.creator || "Unknown Artist",
             year: item.year,
             url: `https://archive.org/download/${item.identifier}/${audioFile.name}`,
@@ -155,51 +278,77 @@ async function searchInternetArchive(query) {
       }),
     );
 
-    return tracks.filter((t) => t !== null);
+    const filteredTracks = tracks.filter((t) => t !== null);
+    console.log(`Found ${filteredTracks.length} Archive tracks`);
+
+    return filteredTracks;
   } catch (error) {
-    console.log("Internet Archive search failed:", error.message);
+    console.log("Archive search error:", error.message);
     return [];
   }
 }
 
 // ========== MAIN SEARCH ROUTE ==========
 router.get("/search", async (req, res) => {
-  const { q, source } = req.query;
+  const { q, source, debug } = req.query;
+
+  console.log(`\n🌐 NEW SEARCH REQUEST:`);
+  console.log(`Query: "${q}"`);
+  console.log(`Source: ${source || "both"}`);
+  console.log(`API Key exists: ${!!YOUTUBE_API_KEY}`);
+  console.log(
+    `API Key sample: ${YOUTUBE_API_KEY ? YOUTUBE_API_KEY.substring(0, 10) + "..." : "none"}`,
+  );
 
   if (!q || !q.trim()) {
     return res.status(400).json({
+      success: false,
       message: "Search query required",
-      example: "/search?q=tamil songs",
-      available_sources: ["both", "youtube", "archive"],
+      example: "http://localhost:3000/api/search?q=tamil+songs",
+      debug: "Add &debug=true to see detailed logs",
     });
   }
 
   try {
-    console.log(`\n=== SEARCH START: "${q}" ===`);
+    // Test YouTube API if requested
+    if (debug === "true") {
+      console.log("\n🔧 DEBUG MODE ENABLED");
+      await testYouTubeAPI();
+    }
 
     let tracks = [];
     const sourcesUsed = [];
-    const searchSource = source || "both";
+    const errors = [];
 
     // Search YouTube
-    if (searchSource === "both" || searchSource === "youtube") {
-      console.log("Searching YouTube...");
+    if (!source || source === "both" || source === "youtube") {
+      console.log("\n📺 SEARCHING YOUTUBE...");
+      const youtubeStart = Date.now();
       const youtubeTracks = await searchYouTube(q);
+      const youtubeTime = Date.now() - youtubeStart;
+
+      console.log(`YouTube search took ${youtubeTime}ms`);
+
       if (youtubeTracks.length > 0) {
         tracks.push(...youtubeTracks);
         sourcesUsed.push("YouTube");
-        console.log(`YouTube results: ${youtubeTracks.length}`);
+      } else {
+        errors.push("YouTube returned 0 results (check API key/quotas)");
       }
     }
 
     // Search Internet Archive
-    if (searchSource === "both" || searchSource === "archive") {
-      console.log("Searching Internet Archive...");
+    if (!source || source === "both" || source === "archive") {
+      console.log("\n🏛️ SEARCHING INTERNET ARCHIVE...");
+      const archiveStart = Date.now();
       const archiveTracks = await searchInternetArchive(q);
+      const archiveTime = Date.now() - archiveStart;
+
+      console.log(`Archive search took ${archiveTime}ms`);
+
       if (archiveTracks.length > 0) {
         tracks.push(...archiveTracks);
         sourcesUsed.push("Internet Archive");
-        console.log(`Archive results: ${archiveTracks.length}`);
       }
     }
 
@@ -214,80 +363,160 @@ router.get("/search", async (req, res) => {
       }
     });
 
-    const finalTracks = uniqueTracks.slice(0, 15);
-
+    // Build response
     const response = {
+      success: true,
       query: q,
-      total: finalTracks.length,
+      total: uniqueTracks.length,
       sources: sourcesUsed,
       timestamp: new Date().toISOString(),
-      tracks: finalTracks,
+      tracks: uniqueTracks,
+      apiInfo: {
+        youtubeConfigured:
+          !!YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_YOUTUBE_API_KEY_HERE",
+        youtubeKeyPreview: YOUTUBE_API_KEY
+          ? YOUTUBE_API_KEY.substring(0, 10) + "..."
+          : "not set",
+      },
     };
 
-    console.log(`=== SEARCH COMPLETE: ${finalTracks.length} tracks ===\n`);
+    // Add errors if any
+    if (errors.length > 0) {
+      response.errors = errors;
+    }
+
+    // Add debug info if requested
+    if (debug === "true") {
+      response.debug = {
+        youtubeApiKeyExists: !!YOUTUBE_API_KEY,
+        youtubeApiKeyPreview: YOUTUBE_API_KEY
+          ? YOUTUBE_API_KEY.substring(0, 15) + "..."
+          : "none",
+      };
+    }
+
+    console.log(`\n✅ SEARCH COMPLETE:`);
+    console.log(`Total tracks: ${uniqueTracks.length}`);
+    console.log(`Sources used: ${sourcesUsed.join(", ")}`);
+    console.log(`First track: ${uniqueTracks[0]?.title || "none"}`);
 
     res.json(response);
   } catch (error) {
-    console.error("Search error:", error.message);
+    console.error("❌ Search route error:", error);
+
+    const errorResponse = {
+      success: false,
+      message: "Search failed",
+      query: q,
+      timestamp: new Date().toISOString(),
+      debugInfo: {
+        youtubeApiKey: YOUTUBE_API_KEY
+          ? "Set (partial): " + YOUTUBE_API_KEY.substring(0, 10) + "..."
+          : "Not set",
+        error: error.message,
+        errorType: error.name,
+      },
+    };
+
+    // Add more details in development
+    if (process.env.NODE_ENV === "development") {
+      errorResponse.stack = error.stack;
+      errorResponse.fullError = error.toString();
+    }
+
+    res.status(500).json(errorResponse);
+  }
+});
+
+// ========== TEST ENDPOINTS ==========
+router.get("/test/youtube", async (req, res) => {
+  try {
+    const isWorking = await testYouTubeAPI();
+
+    res.json({
+      test: "YouTube API Connection",
+      timestamp: new Date().toISOString(),
+      success: isWorking,
+      apiKeyConfigured:
+        !!YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_YOUTUBE_API_KEY_HERE",
+      apiKeyPreview: YOUTUBE_API_KEY
+        ? YOUTUBE_API_KEY.substring(0, 10) + "..."
+        : "not set",
+      stepsToFix: !isWorking
+        ? [
+            "1. Go to https://console.cloud.google.com/",
+            "2. Create a new project or select existing",
+            "3. Enable 'YouTube Data API v3'",
+            "4. Create credentials > API Key",
+            "5. Copy key and set as YOUTUBE_API_KEY in .env file",
+            "6. Remove any IP/HTTP restrictions on the key initially",
+          ]
+        : null,
+    });
+  } catch (error) {
     res.status(500).json({
-      message: "Search service error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      error: error.message,
+      details: error.response?.data || "No additional details",
     });
   }
 });
 
-// ========== YOUTUBE AUDIO EXTRACTION (Client-Side) ==========
-// Note: For legal audio extraction, use a dedicated service or player
-// Here are two approaches:
+router.get("/test/search", async (req, res) => {
+  const testQueries = ["tamil songs", "ar rahman", "instrumental"];
+  const results = {};
 
-// Approach 1: Direct YouTube embed (Legal)
-router.get("/youtube/player/:videoId", (req, res) => {
-  const { videoId } = req.params;
+  for (const query of testQueries) {
+    const youtubeResults = await searchYouTube(query);
+    const archiveResults = await searchInternetArchive(query);
+
+    results[query] = {
+      youtube: youtubeResults.length,
+      archive: archiveResults.length,
+      youtubeTitles: youtubeResults.slice(0, 2).map((t) => t.title),
+      archiveTitles: archiveResults.slice(0, 2).map((t) => t.title),
+    };
+  }
+
   res.json({
-    embedUrl: `https://www.youtube.com/embed/${videoId}`,
-    watchUrl: `https://www.youtube.com/watch?v=${videoId}`,
-    playerType: "youtube_embed",
+    test: "Multi-query Search Test",
+    results: results,
+    summary: {
+      totalYouTube: Object.values(results).reduce(
+        (sum, r) => sum + r.youtube,
+        0,
+      ),
+      totalArchive: Object.values(results).reduce(
+        (sum, r) => sum + r.archive,
+        0,
+      ),
+    },
   });
 });
 
-// Approach 2: YouTube IFrame API info
-router.get("/youtube/info/:videoId", async (req, res) => {
-  const { videoId } = req.params;
-
-  try {
-    const response = await axios.get(YOUTUBE_VIDEO_URL, {
-      params: {
-        part: "snippet,contentDetails",
-        id: videoId,
-        key: YOUTUBE_API_KEY,
-      },
-    });
-
-    const video = response.data.items[0];
-    res.json({
-      title: video.snippet.title,
-      artist: video.snippet.channelTitle,
-      duration: parseYouTubeDuration(video.contentDetails.duration),
-      thumbnail: video.snippet.thumbnails.medium?.url,
-      publishedAt: video.snippet.publishedAt,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ========== HEALTH CHECK ==========
-router.get("/health", (req, res) => {
+// ========== GET YOUTUBE API STATUS ==========
+router.get("/status", (req, res) => {
   res.json({
-    status: "ok",
-    services: {
-      youtube: YOUTUBE_API_KEY ? "configured" : "not configured",
-      internetArchive: "enabled",
+    service: "Music Search API",
+    status: "running",
+    youtube: {
+      configured:
+        !!YOUTUBE_API_KEY &&
+        YOUTUBE_API_KEY !== "AIzaSyBmaAJIeWtYUGZBnNIeoVRyLQ6xLh9t0ys",
+      keyExists: !!YOUTUBE_API_KEY,
+      keyPreview: YOUTUBE_API_KEY
+        ? YOUTUBE_API_KEY.substring(0, 8) + "..."
+        : "none",
+      testUrl: "/api/test/youtube",
+    },
+    archive: {
+      configured: true,
+      testUrl: "/api/search?q=test&source=archive",
     },
     endpoints: {
-      search: "/search?q=YOUR_QUERY",
-      youtubeInfo: "/youtube/info/VIDEO_ID",
-      youtubePlayer: "/youtube/player/VIDEO_ID",
+      search: "/api/search?q=QUERY",
+      youtubeOnly: "/api/search?q=QUERY&source=youtube",
+      archiveOnly: "/api/search?q=QUERY&source=archive",
+      test: "/api/test/youtube",
     },
   });
 });
