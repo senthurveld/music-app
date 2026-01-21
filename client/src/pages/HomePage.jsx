@@ -15,7 +15,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="max-h-screen  bg-background text-foreground">
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
@@ -65,8 +65,8 @@ const HomePage = () => {
           </div>
         </div>
       </main>
-      <hr className="w-11/12 text-gray-400" />
       <footer className="text-sm text-center mb-2 mt-4 text-gray-400">
+        <hr className="w-11/12 text-gray-400 text-center mb-3" />
         Made 🤍 with{" "}
         <a
           href="https://github.com/senthurveld"
