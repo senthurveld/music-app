@@ -73,12 +73,12 @@ const SearchPage = () => {
               className="p-2 hover:bg-zinc-800 rounded-lg mr-4 transition-colors"
               aria-label="Go home"
             >
-              <Home size={24} />
+              <Home size={24} className="hover:text-green-400"/>
             </button>
             <div>
-              <h1 className="text-2xl font-bold">MusicStream</h1>
+              <h1 className="text-2xl font-bold">Musix | VibeSpot</h1>
               <p className="text-sm text-zinc-400">
-                Free legal audio streaming
+                Free legal audio streaming @yt & ia
               </p>
             </div>
           </div>
