@@ -78,7 +78,7 @@ const SearchPage = () => {
             <div>
               <h1 className="text-2xl font-bold">Musix | VibeSpot</h1>
               <p className="text-sm text-zinc-400">
-                Free legal audio streaming @yt & ia
+                Free legal audio streaming 
               </p>
             </div>
           </div>
