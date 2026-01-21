@@ -1,4 +1,3 @@
-// frontend/pages/SearchPage.jsx
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -71,14 +70,14 @@ const SearchPage = () => {
           <div className="flex gap-4 text-sm">
             <span
               className={`flex items-center gap-2 ${
-                apiStatus.youtube ? "text-brand" : "text-muted"
+                apiStatus.youtube ? "text-brand text-red-500" : "text-muted"
               }`}
             >
               <Youtube size={18} /> YouTube
             </span>
             <span
               className={`flex items-center gap-2 ${
-                apiStatus.archive ? "text-brand" : "text-muted"
+                apiStatus.archive ? "text-brand text-teal-600" : "text-muted"
               }`}
             >
               <Globe size={18} /> Archive

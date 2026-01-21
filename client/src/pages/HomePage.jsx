@@ -15,7 +15,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background  text-foreground">
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
@@ -63,7 +63,7 @@ const HomePage = () => {
               <button
                 onClick={goToSearch}
                 className="
-                  bg-brand hover:bg-brand-hover
+                  bg-brand bg-orange-500 hover:bg-brand-hover
                   text-white
                   px-6 py-3 rounded-lg font-semibold
                   transition
@@ -91,7 +91,7 @@ const HomePage = () => {
         Made 🤍 with{" "}
         <a
           href="https://github.com/senthurveld"
-          className="hover:text-brand transition"
+          className="hover:text-green-400 transition"
         >
           Senthurvel
         </a>
