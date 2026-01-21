@@ -3,10 +3,19 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import TrackCard from "../components/TrackCard";
+import { Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 const SearchPage = () => {
   const [params] = useSearchParams();
   const initialQuery = params.get("q") || "";
+  const navigate = useNavigate();
+
+  const goToHome = () => {
+    if (!query.trim()) return;
+    navigate('/');
+  };
 
   const [query, setQuery] = useState(initialQuery);
   const [tracks, setTracks] = useState([]);
@@ -30,13 +39,18 @@ const SearchPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-4xl mx-auto space-y-4">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchTracks(query)}
-          placeholder="Search music..."
-          className="w-full p-3 rounded-lg bg-zinc-800 text-white"
-        />
+        <div className="flex justify-around items-center overflow-hidden">
+          <button onClick={goToHome}>
+            <Home />
+          </button>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && searchTracks(query)}
+            placeholder="Search music..."
+            className="w-full p-3 rounded-lg bg-zinc-800 text-white"
+          />
+        </div>
 
         {loading && <p className="text-center">Searching…</p>}
 
