@@ -10,12 +10,20 @@ export default {
         elevated: "var(--bg-elevated)",
 
         foreground: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
         muted: "var(--text-muted)",
 
         border: "var(--border)",
 
         brand: "var(--brand)",
         "brand-hover": "var(--brand-hover)",
+
+        success: "var(--success)",
+        warning: "var(--warning)",
+        error: "var(--error)",
+      },
+      boxShadow: {
+        soft: "var(--shadow-soft)",
       },
     },
   },
