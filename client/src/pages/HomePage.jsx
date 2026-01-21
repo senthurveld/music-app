@@ -15,36 +15,60 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Top Bar */}
-      <div className="flex items-center p-4 border-b border-zinc-800">
-        <button onClick={() => setMenuOpen(true)} className="text-xl">
-          ☰
-        </button>
-        <h1 className="ml-4 text-lg font-bold">Music</h1>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+          <button onClick={() => setMenuOpen(true)} className="text-2xl mr-4">
+            ☰
+          </button>
+          <h1 className="text-lg sm:text-xl font-bold">Musix</h1>
+        </div>
+      </header>
 
-      {/* Content */}
-      <div className="p-6 space-y-4">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search song, artist, album"
-          className="w-full p-3 bg-zinc-800 rounded"
-        />
+      {/* Main */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          {/* Left Content */}
+          <div className="space-y-6">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+              Discover music you love 🎧
+            </h2>
+            <p className="text-zinc-400 max-w-lg">
+              Search millions of tracks from SoundCloud. Play instantly, no
+              downloads.
+            </p>
 
-        <button
-          onClick={goToSearch}
-          className="w-full bg-orange-500 p-3 rounded"
-        >
-          Search
-        </button>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search songs, artists, albums"
+                className="flex-1 p-3 rounded-lg bg-zinc-800 focus:ring-2 focus:ring-orange-500"
+              />
+              <button
+                onClick={goToSearch}
+                className="bg-orange-500 px-6 py-3 rounded-lg font-semibold"
+              >
+                Search
+              </button>
+            </div>
+          </div>
 
-        <p className="text-sm text-zinc-400">Discover music from SoundCloud</p>
-      </div>
+          {/* Right Visual (Desktop Only) */}
+          <div className="hidden lg:block">
+            <img
+              src="/music-illustration.svg"
+              alt="Music"
+              className="w-full max-w-md ml-auto"
+            />
+          </div>
+        </div>
+      </main>
 
       <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 };
+
 export default HomePage;
