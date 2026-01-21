@@ -1,6 +1,4 @@
-import { ThemeToggle } from "./components/Themetoggle";
 import { Routes, Route, Navigate } from "react-router-dom";
-import FloatingShape from "./components/FloatingShape";
 
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
@@ -39,7 +37,6 @@ const RedirectAuthenticatedUser = ({ children }) => {
   return children;
 };
 
-
 export const App = () => {
   const { isCheckingAuth, checkAuth } = useAuthStore();
 
@@ -51,40 +48,15 @@ export const App = () => {
 
   return (
     <>
-    
-      <div
-        className="min-h-screen bg-linear-to-br from-gray-900 via-green-900 
-      to-emerald-900 flex items-center justify-center relative
-      overflow-hidden"
-      >
-        <FloatingShape
-          color="bg-green-500"
-          size="w-64 h-64"
-          top="-5%"
-          left="10%"
-          delay={0}
-        />
-        <FloatingShape
-          color="bg-emerald-500"
-          size="w-48 h-48"
-          top="70%"
-          left="80%"
-          delay={5}
-        />
-        <FloatingShape
-          color="bg-lime-500"
-          size="w-32 h-32"
-          top="40%"
-          left="-10%"
-          delay={2}
-        />
-        <Routes>
+      <Routes>
+        {/* AUTH ROUTES */}
+        <Route element={<AuthLayout />}>
           <Route
-            path="/"
+            path="/login"
             element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
+              <RedirectAuthenticatedUser>
+                <LoginPage />
+              </RedirectAuthenticatedUser>
             }
           />
           <Route
@@ -92,14 +64,6 @@ export const App = () => {
             element={
               <RedirectAuthenticatedUser>
                 <SignUpPage />
-              </RedirectAuthenticatedUser>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <RedirectAuthenticatedUser>
-                <LoginPage />
               </RedirectAuthenticatedUser>
             }
           />
@@ -120,8 +84,18 @@ export const App = () => {
               </RedirectAuthenticatedUser>
             }
           />
+        </Route>
 
-          {/* musix pages  */}
+        {/* APP ROUTES */}
+        <Route element={<AppLayout />}>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/search"
             element={
@@ -130,11 +104,12 @@ export const App = () => {
               </ProtectedRoute>
             }
           />
-          {/* catch all routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Toaster />
-      </div>
+        </Route>
+
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Toaster />
     </>
   );
 };

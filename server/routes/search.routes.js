@@ -1,3 +1,4 @@
+// server/routes/search.js
 import express from "express";
 import axios from "axios";
 
@@ -5,41 +6,30 @@ const router = express.Router();
 
 router.get("/search", async (req, res) => {
   const { q } = req.query;
-  if (!q) {
+  if (!q || !q.trim())
     return res.status(400).json({ message: "Query required" });
-  }
 
   try {
-    const response = await axios.get(
-      "https://www.googleapis.com/customsearch/v1",
-      {
-        params: {
-          key: process.env.GOOGLE_API_KEY,
-          cx: process.env.SEARCH_ENGINE_ID,
-          q: `${q} site:soundcloud.com`,
-          num: 10,
-        },
-      },
-    );
+    // Internet Archive Advanced Search API
+    const searchUrl = "https://archive.org/advancedsearch.php";
+    const params = {
+      q: `${q} AND mediatype:audio`, // search audio only
+      fl: "identifier,title,creator", // fields to fetch
+      rows: 20, // number of results
+      page: 1,
+      output: "json",
+    };
 
-    const items = response.data.items || [];
+    const response = await axios.get(searchUrl, { params });
 
-    const tracks = items
-      .filter(
-        (item) =>
-          item.link.includes("soundcloud.com") &&
-          !item.link.includes("/sets") &&
-          !item.link.includes("/followers"),
-      )
-      .map((item) => ({
-        title: item.title.replace("- SoundCloud", "").trim(),
-        artist: item.displayLink.replace("soundcloud.com", ""),
-        url: item.link,
-        description: item.snippet,
-        embedUrl: `https://w.soundcloud.com/player/?url=${encodeURIComponent(
-          item.link,
-        )}&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&visual=true`,
-      }));
+    const docs = response.data.response.docs || [];
+
+    const tracks = docs.map((item) => ({
+      title: item.title,
+      artist: item.creator || "Unknown Artist",
+      url: `https://archive.org/download/${item.identifier}/${item.identifier}_64kb.mp3`, // example mp3 file
+      embedUrl: `https://archive.org/download/${item.identifier}/${item.identifier}_64kb.mp3`,
+    }));
 
     res.json({ tracks });
   } catch (error) {

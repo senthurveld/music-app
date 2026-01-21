@@ -6,7 +6,6 @@ const AppLayout = () => {
     <div className="min-h-screen bg-black text-white relative">
       {/* Theme Toggle Button */}
       <ThemeToggle />
-
       {/* Main content */}
       <Outlet />
     </div>
