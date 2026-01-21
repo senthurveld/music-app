@@ -39,7 +39,7 @@ html.dark {
   --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-html * {
+html {
   background-color: var(--bg-main);
   color: var(--text-primary);
 }
