@@ -10,7 +10,7 @@ const SearchPage = () => {
   const searchTracks = async () => {
     setLoading(true);
     const res = await api.get(`/search/search?q=${query}`);
-    setTracks(res.data);
+    setTracks(res.data.tracks || res.data || []);
     setLoading(false);
   };
 
