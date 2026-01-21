@@ -5,7 +5,8 @@ import axios from "axios";
 const router = express.Router();
 
 // YouTube API Configuration
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; 
+const YOUTUBE_API_KEY =
+  process.env.YOUTUBE_API_KEY || "AIzaSyBmaAJIeWtYUGZBnNIeoVRyLQ6xLh9t0ys";
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos";
 

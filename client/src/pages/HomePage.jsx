@@ -58,8 +58,8 @@ const HomePage = () => {
           {/* Right Visual (Desktop Only) */}
           <div className="hidden lg:block">
             <img
-              src="/music-illustration.svg"
-              alt="Music"
+              src="/radio.gif"
+              alt="Hero Image"
               className="w-full max-w-md ml-auto"
             />
           </div>

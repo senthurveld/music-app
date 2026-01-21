@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Play, Pause, ExternalLink, Music, Globe } from "lucide-react";
 
 export default function TrackCard({ track }) {
+  
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playerKey, setPlayerKey] = useState(getDate());
+  const [playerKey, setPlayerKey] = useState("");
 
   const formatDuration = (seconds) => {
     if (!seconds) return "";
@@ -12,9 +13,7 @@ export default function TrackCard({ track }) {
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
-  const getDate = () => {
-    return Date.now();
-  };
+  
   const getSourceIcon = (source) => {
     switch (source) {
       case "YouTube":
