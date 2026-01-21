@@ -17,7 +17,7 @@ const SearchPage = () => {
     setLoading(true);
     try {
       const res = await api.get(`/search/search?q=${encodeURIComponent(q)}`);
-      setTracks(res.data.tracks || res.data || []);
+      setTracks(Array.isArray(res.data.tracks) ? res.data.tracks : []);
     } catch (err) {
       console.error(err);
       setTracks([]);
@@ -60,9 +60,8 @@ const SearchPage = () => {
 
         {!loading && tracks.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {tracks.map((track, i) => (
-              <TrackCard key={i} track={track} />
-            ))}
+            {Array.isArray(tracks) &&
+              tracks.map((track, i) => <TrackCard key={i} track={track} />)}
           </div>
         )}
 
