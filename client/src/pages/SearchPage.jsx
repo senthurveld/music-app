@@ -41,7 +41,7 @@ const SearchPage = () => {
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex justify-around items-center overflow-hidden">
           <button onClick={goToHome}>
-            <Home />
+            <Home className="p-2 pr-4 hover:stroke-green-500"/>
           </button>
           <input
             value={query}
