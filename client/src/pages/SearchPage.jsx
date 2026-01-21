@@ -6,7 +6,6 @@ import TrackCard from "../components/TrackCard";
 import { Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
 const SearchPage = () => {
   const [params] = useSearchParams();
   const initialQuery = params.get("q") || "";
@@ -14,7 +13,7 @@ const SearchPage = () => {
 
   const goToHome = () => {
     if (!query.trim()) return;
-    navigate('/');
+    navigate("/");
   };
 
   const [query, setQuery] = useState(initialQuery);
@@ -40,8 +39,11 @@ const SearchPage = () => {
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex justify-around items-center overflow-hidden">
-          <button onClick={goToHome}>
-            <Home className="p-2 pr-4 hover:stroke-green-500"/>
+          <button
+            onClick={goToHome}
+            className="p-2 pr-4 hover:stroke-green-500"
+          >
+            <Home />
           </button>
           <input
             value={query}
@@ -54,7 +56,7 @@ const SearchPage = () => {
 
         {loading && <p className="text-center">Searching…</p>}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {tracks.map((track, i) => (
             <TrackCard key={i} track={track} />
           ))}
