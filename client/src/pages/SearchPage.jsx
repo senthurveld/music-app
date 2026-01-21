@@ -97,7 +97,7 @@ const SearchPage = () => {
               onClick={goToHome}
               className="p-2 hover:bg-zinc-800 rounded-lg mr-4"
             >
-              <Home size={24} />
+              <Home size={24} className="hover:text-green-500"/>
             </button>
             <div>
               <h1 className="text-2xl font-bold">MusicSearch</h1>
