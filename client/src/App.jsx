@@ -6,13 +6,16 @@ import HomePage from "./pages/HomePage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import SearchPage from "./pages/SearchPage";
 
 import LoadingSpinner from "./components/LoadingSpinner";
 
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
-import SearchPage from "./pages/SearchPage";
+
+import AuthLayout from "./layouts/AuthLayout";
+import AppLayout from "./layouts/AppLayout";
 
 // Protected routes that requires auth
 const ProtectedRoute = ({ children }) => {
