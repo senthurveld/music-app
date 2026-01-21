@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import HamburgerMenu from "../components/HamburgerMenu";
 
 const HomePage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
