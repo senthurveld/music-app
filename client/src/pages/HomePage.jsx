@@ -16,7 +16,7 @@ const HomePage = () => {
 
   return (
     <>
-      <div className="max-h-screen  bg-background text-foreground">
+      <div className="w-full min-h-fit bg-background text-foreground">
         {/* Header */}
         <header className="border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
