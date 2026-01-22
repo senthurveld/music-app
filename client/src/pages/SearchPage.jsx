@@ -76,7 +76,9 @@ const SearchPage = () => {
               <Home size={24} className="hover:text-green-400" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold">Musix | VibeSpot</h1>
+              <h1 className="text-2xl font-bold bg-linear-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">
+                Musix | VibeSpot
+              </h1>
               <p className="text-sm text-zinc-400">
                 Free legal audio streaming
               </p>
